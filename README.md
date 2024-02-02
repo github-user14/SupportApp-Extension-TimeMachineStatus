@@ -13,6 +13,11 @@ Enable Extension A
 
 <img width="345" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/bd0e4d9d-6cba-42e5-a71f-5c5d6279db57">
 
+Extension Title
+
+<img width="320" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/374fb6d3-9c1d-4d68-96b9-17c420e61282">
+
+
 OnAppear Script
 
 <img width="318" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/d5226839-4278-4732-808f-11617f058341">
