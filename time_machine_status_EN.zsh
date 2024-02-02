@@ -34,6 +34,9 @@ OUTPUT_BACKUP_VOLUME_DISCONNECTED="Drive not connected!"
 OUTPUT_BACKUP_VOLUME_NOT_ENCRYPTED="Not encrypted!"
 # OUTPUT_TM_BACKUP_AGE_IN_DAYS="vor $days_since_last_tm_backup Tagen" is configured within the script because otherwise the variable $days_since_last_tm_backup returns as empty!
 
+# Setting a variable for exporting the Time Machine plist file to stdout
+defaults_export_tm_plist="$(defaults export /Library/Preferences/com.apple.TimeMachine.plist -)"
+
 # log file for troubleshooting
 exec &> /Users/Shared/tm_status_log.txt
 
@@ -48,41 +51,88 @@ defaults write /Library/Preferences/nl.root3.support.plist ExtensionValueA -stri
 echo "Checking if the file $TM_PLIST_FILE exists..."
 if [ -e "$TM_PLIST_FILE" ]; then
     echo "SUCCESS: File $TM_PLIST_FILE exists."
+	echo ""
     
     # Read Time Machine AutoBackup status from the plist
-	tm_auto_backup_enabled=$(defaults read "/Library/Preferences/com.apple.TimeMachine.plist" AutoBackup 2>/dev/null)
+	tm_auto_backup_enabled=$((/usr/libexec/PlistBuddy -c "Print :AutoBackup" /dev/stdin) <<< $defaults_export_tm_plist)
 	echo "Variable tm_auto_backup_enabled: $tm_auto_backup_enabled"
 			
 	echo "Checking if AutoBackup is enabled..."
-	if [ "$tm_auto_backup_enabled" = "1" ]; then				
+	if [ $tm_auto_backup_enabled ]; then				
 		echo "SUCCESS: AutoBackup is enabled."				
 		echo "Checking if a backup was ever completed..."
 				
 		# Reading the array of Time Machine SnapshotDates if "SnapshotDates" is found in the plist, and formating it as YYYY-MM-DD. Any error is ignored resulting in an empty variable
-		if [[ -n $(defaults read /Library/Preferences/com.apple.TimeMachine.plist | grep SnapshotDates) ]]; then	
-			last_tm_backup_date=$(defaults read /Library/Preferences/com.apple.TimeMachine.plist 2>/dev/null | grep -oE '2[0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \+0000' | awk -F ' ' '{print $1}' | sort -r | head -n 1)
-			echo "Variable last_tm_backup_date: $last_tm_backup_date"	
-		else
-			echo "WARNING: No SnapshotDate found. Backup was never completed."
-		fi
-		
-		#last_tm_backup_date=$(defaults read /Library/Preferences/com.apple.TimeMachine.plist | grep -oE '2[0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \+0000' | awk -F ' ' '{print $1}' | sort -r | head -n 1)
-		echo "Variable last_tm_backup_date: $last_tm_backup_date"
+		echo "INFO: Getting the SnapshotDates array"
+		last_tm_backup_date_array=$(/usr/libexec/PlistBuddy -c "Print :Destinations:0:SnapshotDates" /dev/stdin <<< $defaults_export_tm_plist)
+		echo "VAR: \$last_tm_backup_date_array"
+		echo "VAL: $last_tm_backup_date_array"
+		echo ""
+
+
+		echo "INFO: Getting the array length"
+		returned_lines=$((/usr/libexec/PlistBuddy -c "Print :Destinations:0:SnapshotDates" /dev/stdin | grep -c :) <<< $defaults_export_tm_plist)
+		echo "VAR: \$returned_lines"
+		echo "VAR: $returned_lines"
+		echo ""
+
+		echo "Subtracting 1 from the length to get the index of the last entry"
+		index=$(($returned_lines - 1))
+		echo "VAR: \$index"
+		echo "VAL: $index"
+		echo ""
+
+		echo "INFO: Getting the last entry, the latest Snapshot Date"
+		latest_snapshotDate=$(/usr/libexec/PlistBuddy -c "Print :Destinations:0:SnapshotDates:$index" /dev/stdin <<< $defaults_export_tm_plist)
+		echo "VAR: \$latest_snapshotDate"
+		echo "VAL: $latest_snapshotDate"
+		echo ""
+
+		echo "INFO: Converting the Month into a numerical value"
+		# Define an associative array mapping month names to their numerical representations
+		typeset -A months
+		months=( [Jan]=01 [Feb]=02 [Mar]=03 [Apr]=04 [May]=05 [Jun]=06 [Jul]=07 [Aug]=08 [Sep]=09 [Oct]=10 [Nov]=11 [Dec]=12 )
+
+		# Getting the months name from the latest SnapshotDate
+		month_name="$(echo "$latest_snapshotDate" | awk '{print $2}')"
+
+		# Getting the numerical value for the month from the array
+		tm_date_month_numeric=${months[$month_name]}
+		echo "VAR: \$tm_date_month_numeric"
+		echo "VAL: $tm_date_month_numeric"
+		echo ""
+
+		echo "INFO: Combining the latest SnapshotDate in the format YYYY-MM-DD"
+		# Get the day from the SnapshotDate
+		tm_date_day=$(echo "$latest_snapshotDate" | awk '{print $3}')
+
+		# Get the year from the SnapshotDate
+		tm_date_year=$(echo "$latest_snapshotDate" | awk '{print $6}')
+
+		# Combining the results to get the correct format
+		latest_snapshotDate_formatted=$(echo "$tm_date_year""-""$tm_date_month_numeric""-""$tm_date_day")
+		echo "VAR: \$latest_snapshotDate_formatted"
+		echo "VAL: $latest_snapshotDate_formatted"
+		echo ""
 		
 		echo "Checking if last_tm_backup_date is in a valid format (YYYY-MM-DD)..."				
-		if [[ "$last_tm_backup_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then			
+		if [[ "$latest_snapshotDate_formatted" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then			
 			echo "SUCCESS: last_tm_backup_date was found and is in the correct Format."
 			
 			# Backup encryption status
-			tm_backup_encryption_status=$(defaults read "/Library/Preferences/com.apple.TimeMachine.plist" Destinations 2>/dev/null | grep -m1 LastKnownEncryptionState | awk '{print $3}' | tr -d '";' | awk -F';' '{print $1}')
+			tm_backup_encryption_status=$((/usr/libexec/PlistBuddy -c "Print :Destinations:0:LastKnownEncryptionState" /dev/stdin 2>/dev/null) <<< $defaults_export_tm_plist)
+
 			echo "Variable tm_backup_encryption_status: $tm_backup_encryption_status"
 			
-			# Last known backup volume
-			tm_backup_last_known_volume=$(defaults read "/Library/Preferences/com.apple.TimeMachine.plist" Destinations 2>/dev/null | grep -m1 LastKnownVolumeName | sed 's/.* = "\(.*\)";/\1/')
-			echo "Variable tm_backup_last_known_volume: $tm_backup_last_known_volume"
-			
+			# Checking last known volume name for TM
+			echo "INFO: Checking last known volume name for TM"
+			tm_backup_last_known_volume=$((/usr/libexec/PlistBuddy -c "Print :Destinations:0:LastKnownVolumeName" /dev/stdin ) <<< $defaults_export_tm_plist)
+			echo "VAR: \$tm_backup_last_known_volume"
+			echo "VAL: $tm_backup_last_known_volume"
+			echo ""		
+
 			echo "Calculating how many days ago the last_tm_backup_date is..."			
-			days_since_last_tm_backup=$(( ($(date "+%s") - $(date -jf "%Y-%m-%d" "$last_tm_backup_date" "+%s")) / 86400 ))
+			days_since_last_tm_backup=$(( ($(date "+%s") - $(date -jf "%Y-%m-%d" "$latest_snapshotDate_formatted" "+%s")) / 86400 ))
 
 			echo "Days since last backup: $days_since_last_tm_backup"		
 				
