@@ -1,5 +1,6 @@
 # SupportApp-Extension / Time Machine Status
 WIP!
+Only tested with macOS Sonoma 14.3
 
 Used with the Support App:
 https://github.com/root3nl/SupportApp
