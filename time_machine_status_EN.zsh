@@ -30,15 +30,15 @@ OUTPUT_TM_BACKUP_TODAY="Today"
 OUTPUT_TM_BACKUP_YESTERDAY="Yesterday"
 OUTPUT_TM_BACKUP_RUNNING="In progress..."
 OUTPUT_UNKNOWN_ERROR="Unexpecteed Error!"
-OUTPUT_BACKUP_VOLUME_DISCONNECTED="Drive not connected!"
+OUTPUT_BACKUP_VOLUME_DISCONNECTED="Backup volume not connected!"
 OUTPUT_BACKUP_VOLUME_NOT_ENCRYPTED="Not encrypted!"
-# OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup ago" is configured within the script because otherwise the variable $days_since_last_tm_backup returns as empty!
+# OUTPUT_TM_BACKUP_AGE_IN_DAYS="vor $days_since_last_tm_backup Tagen" is configured within the script because otherwise the variable $days_since_last_tm_backup returns as empty!
 
 # Setting a variable for exporting the Time Machine plist file to stdout
 defaults_export_tm_plist="$(defaults export /Library/Preferences/com.apple.TimeMachine.plist -)"
 
 # log file for troubleshooting
-exec &> /Users/Shared/tm_status_log.txt
+# exec &> /Users/Shared/tm_status_log.txt
 
 
 # Support App Configuration
@@ -137,7 +137,7 @@ if [ -e "$TM_PLIST_FILE" ]; then
 			echo "Days since last backup: $days_since_last_tm_backup"		
 				
 # CONFIG	# Configure the OUTPUT_TM_BACKUP_AGE_IN_DAYS text here
-			OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup ago"
+			OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup days ago"
 			echo "Checking how long ago the backup was completed..."
 			
 			if [ "$days_since_last_tm_backup" -gt "$WARN_IF_BACKUP_OLDER_THAN_DAYS" ]; then
@@ -191,15 +191,17 @@ else
 	
 	echo "Backup is not running."
 	echo "Checking if the backup volume is connected..."
-	if [ -e "/Volumes/${tm_backup_last_known_volume}" ] && [[ -n "$tm_backup_last_known_volume" ]]; then
+	echo '"'/Volumes/${tm_backup_last_known_volume}'"'
+	if [ -e '"'/Volumes/${tm_backup_last_known_volume}'"' ] && [[ -n "$tm_backup_last_known_volume" ]]; then
 	
 		echo "SUCCESS: Backup volume is connected."
 		
-	elif [ "$tm_auto_backup_enabled" = "1" ] && [ ! -e "/Volumes/${tm_backup_last_known_volume}" ] && [[ -n "$tm_backup_last_known_volume" ]]; then
+	elif [ $tm_auto_backup_enabled ] && [ ! -e '"'/Volumes/${tm_backup_last_known_volume}'"' ] && [[ -n "$tm_backup_last_known_volume" ]]; then
 		
 		echo "WARNING: Backup volume not connected!"
 		output="$output ($OUTPUT_BACKUP_VOLUME_DISCONNECTED)"
-		warn="true"
+		# Warning disabled because WARN_IF_BACKUP_OLDER_THAN_DAYS=7 should be enough
+		# warn="true"
 	
 	fi
 	
