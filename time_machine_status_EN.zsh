@@ -58,7 +58,7 @@ if [ -e "$TM_PLIST_FILE" ]; then
 	echo "Variable tm_auto_backup_enabled: $tm_auto_backup_enabled"
 			
 	echo "Checking if AutoBackup is enabled..."
-	if [ $tm_auto_backup_enabled ]; then				
+	if [ "$tm_auto_backup_enabled" = "true" ]; then				
 		echo "SUCCESS: AutoBackup is enabled."				
 		echo "Checking if a backup was ever completed..."
 				
