@@ -136,8 +136,8 @@ if [ -e "$TM_PLIST_FILE" ]; then
 
 			echo "Days since last backup: $days_since_last_tm_backup"		
 				
-# CONFIG	# Configure the OUTPUT_TM_BACKUP_AGE_IN_DAYS text here
-			OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup days ago"
+			# CONFIG	# Configure the OUTPUT_TM_BACKUP_AGE_IN_DAYS text here
+			OUTPUT_TM_BACKUP_AGE_IN_DAYS="Vor $days_since_last_tm_backup Tagen"
 			echo "Checking how long ago the backup was completed..."
 			
 			if [ "$days_since_last_tm_backup" -gt "$WARN_IF_BACKUP_OLDER_THAN_DAYS" ]; then
@@ -192,11 +192,11 @@ else
 	echo "Backup is not running."
 	echo "Checking if the backup volume is connected..."
 	echo '"'/Volumes/${tm_backup_last_known_volume}'"'
-	if [ -e '"'/Volumes/${tm_backup_last_known_volume}'"' ] && [[ -n "$tm_backup_last_known_volume" ]]; then
+	if [ -e "/Volumes/${tm_backup_last_known_volume}" ] && [[ -n "$tm_backup_last_known_volume" ]]; then
 	
 		echo "SUCCESS: Backup volume is connected."
 		
-	elif [ $tm_auto_backup_enabled ] && [ ! -e '"'/Volumes/${tm_backup_last_known_volume}'"' ] && [[ -n "$tm_backup_last_known_volume" ]]; then
+	elif [ "$tm_auto_backup_enabled" = "true" ] && [ ! -e "/Volumes/${tm_backup_last_known_volume}" ] && [[ -n "$tm_backup_last_known_volume" ]]; then
 		
 		echo "WARNING: Backup volume not connected!"
 		output="$output ($OUTPUT_BACKUP_VOLUME_DISCONNECTED)"
