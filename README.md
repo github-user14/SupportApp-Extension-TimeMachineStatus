@@ -25,3 +25,9 @@ OnAppear Script
 Time Machine status
 
 <img width="189" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/7f4e0158-add4-4c14-8e5b-30addf043969">
+
+By default the script enables the orange warning when:
+- Time Machine is disabled
+- when no backup has been created yet
+- the last backup was created more than 7 days ago 
+- the backup is not encrypted
