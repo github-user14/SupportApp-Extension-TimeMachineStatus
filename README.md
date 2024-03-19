@@ -7,7 +7,7 @@ https://github.com/root3nl/SupportApp
 
 Requires the SupportHelper to run the script as root with the OnAppearScript functionality.
 
-Place the script in /usr/local/bin/ and configure Support App to run the scrip and to show the ExtensionA field.
+Place the script in /usr/local/bin/ (or run the package installer) and configure Support App to run the script and to show the ExtensionA field.
 
 By default the script enables the orange warning when:
 - Time Machine is disabled
@@ -30,6 +30,7 @@ Extension Title
 ---
 
 OnAppear Script
+Note: the script name should be "time_machine_status_EN.zsh"
 
 <img width="318" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/d5226839-4278-4732-808f-11617f058341">
 
