@@ -32,7 +32,7 @@ OUTPUT_TM_BACKUP_RUNNING="In progress..."
 OUTPUT_UNKNOWN_ERROR="Unexpecteed Error!"
 OUTPUT_BACKUP_VOLUME_DISCONNECTED="Backup volume not connected!"
 OUTPUT_BACKUP_VOLUME_NOT_ENCRYPTED="Not encrypted!"
-# OUTPUT_TM_BACKUP_AGE_IN_DAYS="vor $days_since_last_tm_backup Tagen" is configured within the script because otherwise the variable $days_since_last_tm_backup returns as empty!
+# OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup days ago" is configured within the script (Line 140) because otherwise the variable $days_since_last_tm_backup returns as empty!
 
 # Setting a variable for exporting the Time Machine plist file to stdout
 defaults_export_tm_plist="$(defaults export /Library/Preferences/com.apple.TimeMachine.plist -)"
@@ -137,7 +137,7 @@ if [ -e "$TM_PLIST_FILE" ]; then
 			echo "Days since last backup: $days_since_last_tm_backup"		
 				
 			# CONFIG	# Configure the OUTPUT_TM_BACKUP_AGE_IN_DAYS text here
-			OUTPUT_TM_BACKUP_AGE_IN_DAYS="Vor $days_since_last_tm_backup Tagen"
+			OUTPUT_TM_BACKUP_AGE_IN_DAYS="$days_since_last_tm_backup days ago"
 			echo "Checking how long ago the backup was completed..."
 			
 			if [ "$days_since_last_tm_backup" -gt "$WARN_IF_BACKUP_OLDER_THAN_DAYS" ]; then
