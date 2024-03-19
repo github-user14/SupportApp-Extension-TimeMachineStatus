@@ -30,6 +30,7 @@ Extension Title
 ---
 
 OnAppear Script
+
 Note: the script name should be "time_machine_status_EN.zsh"
 
 <img width="318" alt="image" src="https://github.com/github-user14/SupportApp-Extensions/assets/158499136/d5226839-4278-4732-808f-11617f058341">
